@@ -101,7 +101,7 @@ elsif ($Path =~ m{^/Asset/Search/}) {
     $page->child( advanced => title => loc('Advanced'), path => '/Asset/Search/Edit.html' . $args, sort_order => 2 );
     if ($has_query) {
         # these overwrite the core Asset menu items
-        $page->child( results => title => loc('Show Results'), path => '/Asset/Search/Results.html' . $args, sort_order => 3 );
+        $page->child( search => title => loc('Show Results'), path => '/Asset/Search/Results.html' . $args, sort_order => 3 );
         $page->child('bulk',
             title => loc('Bulk Update'),
             path => '/Asset/Search/Bulk.html' . $args,
