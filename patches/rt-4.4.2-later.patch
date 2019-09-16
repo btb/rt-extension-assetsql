@@ -71,3 +71,22 @@ index 53ad702..5be90d6 100644
      $ProcessedSearchArg->{TotalFound} = $count;
  }
  </%init>
+--- a/share/html/Helpers/BuildFormatString	2019-08-27 15:12:44.000000000 -0700
++++ b/share/html/Helpers/BuildFormatString	2019-09-16 14:56:31.000000000 -0700
+@@ -46,8 +46,15 @@
+ %#
+ %# END BPS TAGGED BLOCK }}}
+ <%init>
++my $FormatStringBuilderElement = '/Search/Elements/BuildFormatString';
++if ( RT::Interface::Web::RequestENV('HTTP_REFERER') ) {
++    my $referer = URI->new(RT::Interface::Web::RequestENV('HTTP_REFERER'));
++    if ($referer->path =~ m{^/Asset/Search/Build\.html$}) {
++        $FormatStringBuilderElement = '/Asset/Search/Elements/BuildFormatString';
++    }
++}
+ my ( $Format, $AvailableColumns, $CurrentFormat ) = $m->comp(
+-    '/Search/Elements/BuildFormatString',
++    $FormatStringBuilderElement,
+     %ARGS
+ );
+ $r->content_type('application/json; charset=utf-8');
