@@ -6,7 +6,7 @@
 <& /Elements/ListActions, actions => \@results &>
 
 <form method="post" action="<% RT->Config->Get('WebPath') %>/Asset/Search/Bulk.html" enctype="multipart/form-data" name="BulkUpdate" id="BulkUpdate">
-% foreach my $var ( @{$search{'PassArguments'}} )  {
+% foreach my $var ( @{$search{'PassArguments'} || []} )  {
 <input type="hidden" class="hidden" name="<% $var %>" value="<% $ARGS{$var} || '' %>" />
 % }
 % foreach my $var (qw(Query Format OrderBy Order Rows Page Token)) {
@@ -108,6 +108,29 @@ my $assets = RT::Assets->new($session{CurrentUser});
 my %search;
 if ( $ARGS{Query} ) {
     $assets->FromSQL($ARGS{Query});
+
+    unless ( defined $Rows ) {
+        $Rows = $RowsPerPage;
+        $ARGS{Rows} = $RowsPerPage;
+    }
+
+    if ( $OrderBy =~ /\|/ ) {
+
+        # Multiple Sorts
+        my @OrderBy = split /\|/, $OrderBy;
+        my @Order   = split /\|/, $Order;
+        $assets->OrderByCols(
+            map { { FIELD => $OrderBy[$_], ORDER => $Order[$_] } }
+                ( 0 .. $#OrderBy ) );
+    }
+    else {
+        $assets->OrderBy( FIELD => $OrderBy, ORDER => $Order );
+    }
+
+    $assets->RowsPerPage($Rows) if ($Rows);
+    $assets->GotoPage( $Page - 1 );     # SB uses page 0 as the first page
+
+    %search = map { $_ => $ARGS{$_} } qw(Query OrderBy Order Rows Page);
 }
 else {
     %search = ProcessAssetsSearchArguments(
@@ -158,5 +181,10 @@ elsif ( $ARGS{Update} ) {
 }
 </%INIT>
 <%ARGS>
+$Page => 1
+$Rows => undef
+$RowsPerPage => undef
+$Order => 'ASC'
+$OrderBy => 'id'
 @UpdateAsset => ()
 </%ARGS>
